@@ -1,0 +1,28 @@
+{
+  "name": "comment-pusher-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest",
+    "start": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "express-validator": "^5.3.0",
+    "husky": "^0.14.3",
+    "morgan": "^1.9.0",
+    "nodemon": "^1.18.6"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "jest": "^23.1.0",
+    "prettier": "^1.13.5",
+    "pretty-quick": "^1.6.0"
+  }
+}

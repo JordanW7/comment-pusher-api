@@ -1,0 +1,14 @@
+version: "3.6"
+services:
+  # Backend
+  react-pusher-api:
+    container_name: comment-pusher-backend
+    build: ./
+    volumes:
+      - ./:/usr/src/comment-pusher-api
+    command: npm start
+    working_dir: /usr/src/comment-pusher-api
+    ports:
+      - "3000:3000"
+    environment:
+      FRONTEND_URL: http://localhost:3001
