@@ -1,4 +1,6 @@
 const express = require("express");
+const io = require('socket.io')();
+
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -25,5 +27,14 @@ app.use(morgan("combined"));
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
+io.on('connection', (client) => {
+  client.on('subscribeToTimer', (interval) => {
+    console.log('client is subscribing to timer with interval ', interval);
+    setInterval(() => {
+      client.emit('timer', new Date());
+    }, interval);
+  });
+});
+
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server is listening on port ${port}.`));
+io.listen(port, () => console.log(`Server is listening on port ${port}.`));
