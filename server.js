@@ -1,6 +1,6 @@
 const express = require("express");
 const io = require('socket.io')();
-
+const CronJob = require('cron').CronJob;
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -28,11 +28,12 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 io.on('connection', (client) => {
-  client.on('subscribeToTimer', (interval) => {
-    console.log('client is subscribing to timer with interval ', interval);
-    setInterval(() => {
-      client.emit('timer', new Date());
-    }, interval);
+client.on('subscribeToComments', () => {
+	const timer = new Date()
+    console.log(timer,'client is subscribing to comments');
+    new CronJob('5 * * * * *', function() {
+		  client.emit('comments', 'NEW STUFF')
+		}, null, true);
   });
 });
 
