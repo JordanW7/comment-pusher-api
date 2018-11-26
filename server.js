@@ -1,31 +1,13 @@
-const express = require("express");
 const io = require('socket.io')();
 const CronJob = require('cron').CronJob;
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const morgan = require("morgan");
-const { check } = require("express-validator/check");
+const validator = require('validator');
 
-const app = express();
-
-const comments = require("./controllers/comments");
-
-const whitelist = [
-  "localhost:3001"
-];
-const corsOptions = {
-  origin: function(origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
+io.origins((origin, callback) => {
+  if (origin !== 'http://localhost:3001') {
+      return callback('origin not allowed', false);
   }
-};
-
-app.use(morgan("combined"));
-app.use(cors(corsOptions));
-app.use(bodyParser.json());
+  callback(null, true);
+});
 
 const sendRandomFakeLiveComments = () => {
 	const firstnames = ['John','David','Michael','Sarah','Anna','Hayley','James','Emily','Jane']
@@ -39,7 +21,7 @@ const sendRandomFakeLiveComments = () => {
 				  	const comment = randcomments[Math.floor(Math.random() * 9)]
 				  	const randimg = Math.floor(Math.random()*100)
 				  	const imageurl = `http://placeimg.com/40/40/any/${randimg}`
-				  	io.emit('comments', [first,last,imageurl,comment,new Date()])
+				  	io.emit('comments', [first,last,imageurl,comment,new Date() - 60])
 				  }
 				}, null, true);
 }
@@ -47,12 +29,16 @@ const sendRandomFakeLiveComments = () => {
 sendRandomFakeLiveComments();
 
 io.on('connection', (client) => {
-	client.on('subscribeToComments', () => {
-		const timer = new Date();
-	    console.log(timer,'client is subscribing to comments');    
+	console.log(new Date(),'user connected');    
+	client.on('disconnect', () => {
+		console.log(new Date(),'user disconnected')
+	    client.removeAllListeners('subscribeToComments');
+	    client.removeAllListeners('addnewcomment');
+	    io.removeAllListeners('disconnect');
 	});
-	client.on('comments', (msg) => {
-		console.log("RECEIVED NEW",msg)
+	client.on('addnewcomment', (data) => {
+		let message = validator.trim(data);
+		client.broadcast.emit('comments', ['Guest','','',message,new Date() - 60]);
 		});
 });
 
