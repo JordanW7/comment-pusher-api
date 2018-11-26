@@ -12,7 +12,7 @@ io.origins((origin, callback) => {
 const sendRandomFakeLiveComments = () => {
 	const firstnames = ['John','David','Michael','Sarah','Anna','Hayley','James','Emily','Jane']
 	const lastnames = ['Brown','Smith','Baker','Mitchell','Bond','Morrison','Davis','Williams','Johnson']
-	const randcomments = ['Hello','Wow, this is interesting','Does anyone actually understand this?','Um what is this','Why am I even watching this?','Hey Sarah - how was work?','That was unexpected','My favourite video of all time','Really thought provoking']
+	const randcomments = ['Hello','Wow, this is interesting','Does anyone actually understand this?','Um what is this','Why am I even watching this?','I really should be doing something else, but this is so captivating','That was unexpected','My favourite video of all time','Really thought provoking']
 	new CronJob('*/5 * * * * *', () => {
 		    	let random = Math.random();
 		    	if (random < 0.5) {
