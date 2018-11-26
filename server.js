@@ -32,12 +32,12 @@ io.on('connection', (client) => {
 	console.log(new Date(),'user connected');    
 	client.on('disconnect', () => {
 		console.log(new Date(),'user disconnected')
-	    client.removeAllListeners('subscribeToComments');
 	    client.removeAllListeners('addnewcomment');
 	    io.removeAllListeners('disconnect');
 	});
 	client.on('addnewcomment', (data) => {
 		let message = validator.trim(data);
+		if (!message) { return }
 		client.broadcast.emit('comments', ['Guest','','',message,new Date() - 60]);
 		});
 });
