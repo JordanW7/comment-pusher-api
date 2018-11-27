@@ -1,32 +1,30 @@
-const io = require('socket.io')();
-const CronJob = require('cron').CronJob;
+const app = require('express')();
+const cors = require("cors");
+const morgan = require("morgan");
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
 const validator = require('validator');
 
-io.origins((origin, callback) => {
-  if (origin !== 'http://localhost:3001') {
-      return callback('origin not allowed', false);
+const comments = require("./controllers/comments");
+comments.handleFakeLiveComments(io);
+
+const whitelist = [
+  "http://localhost:3001",
+  "http://localhost:8080"
+];
+const corsOptions = {
+  origin: function(origin, callback) {
+  	callback(null, true);
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
   }
-  callback(null, true);
-});
+};
 
-const sendRandomFakeLiveComments = () => {
-	const firstnames = ['John','David','Michael','Sarah','Anna','Hayley','James','Emily','Jane']
-	const lastnames = ['Brown','Smith','Baker','Mitchell','Bond','Morrison','Davis','Williams','Johnson']
-	const randcomments = ['Hello','Wow, this is interesting','Does anyone actually understand this?','Um what is this','Why am I even watching this?','I really should be doing something else, but this is so captivating','That was unexpected','My favourite video of all time','Really thought provoking']
-	new CronJob('*/5 * * * * *', () => {
-		    	let random = Math.random();
-		    	if (random < 0.5) {
-				  	const first = firstnames[Math.floor(Math.random() * 9)]
-				  	const last = lastnames[Math.floor(Math.random() * 9)]
-				  	const comment = randcomments[Math.floor(Math.random() * 9)]
-				  	const randimg = Math.floor(Math.random()*100)
-				  	const imageurl = `http://placeimg.com/40/40/any/${randimg}`
-				  	io.emit('comments', [first,last,imageurl,comment,new Date() - 60])
-				  }
-				}, null, true);
-}
-
-sendRandomFakeLiveComments();
+app.use(morgan("combined"));
+app.use(cors(corsOptions));
 
 io.on('connection', (client) => {
 	console.log(new Date(),'user connected');    
@@ -38,9 +36,16 @@ io.on('connection', (client) => {
 	client.on('addnewcomment', (data) => {
 		let message = validator.trim(data);
 		if (!message) { return }
-		client.broadcast.emit('comments', ['Guest','','',message,new Date() - 60]);
+		comments.handleAddComment(client, message);
 		});
 });
 
+app.get(
+  "/",
+  (req, res) => {
+      return res.status(200).json('Hello');
+    }
+);
+
 const port = process.env.PORT || 3000;
-io.listen(port, () => console.log(`Server is listening on port ${port}.`));
+server.listen(port, () => console.log(`Server is listening on port ${port}.`));
